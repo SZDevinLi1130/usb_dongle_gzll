@@ -28,17 +28,23 @@ Project File Date:  03/30/2020
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'nrf52840_xxaa'
 compiling main.c...
+..\..\..\main.c(481): warning:  #177-D: variable "err_code"  was declared but never referenced
+      uint32_t err_code;
+..\..\..\main.c(736): warning:  #177-D: variable "length"  was declared but never referenced
+      uint32_t length;
+..\..\..\main.c(739): warning:  #177-D: variable "payload"  was declared but never referenced
+      uint8_t payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH];
 ..\..\..\main.c(78): warning:  #177-D: variable "m_data_payload"  was declared but never referenced
   static uint8_t                  m_data_payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH]; /**< Placeholder for data payload received from host. */
 ..\..\..\main.c(79): warning:  #177-D: variable "m_ack_payload"  was declared but never referenced
   static uint8_t                  m_ack_payload[TX_PAYLOAD_LENGTH];                  /**< Payload to attach to ACK sent to device. */
 ..\..\..\main.c(82): warning:  #177-D: variable "m_statistics"  was declared but never referenced
   static nrf_gzll_tx_statistics_t m_statistics; /**< Struct containing transmission statistics. */
-..\..\..\main.c: 3 warnings, 0 errors
+..\..\..\main.c: 6 warnings, 0 errors
 linking...
-Program Size: Code=77004 RO-data=12776 RW-data=1388 ZI-data=14204  
+Program Size: Code=76848 RO-data=12620 RW-data=1356 ZI-data=14140  
 FromELF: creating hex file...
-".\_build\nrf52840_xxaa.axf" - 0 Error(s), 3 Warning(s).
+".\_build\nrf52840_xxaa.axf" - 0 Error(s), 6 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -64,10 +70,10 @@ Package Vendor: NordicSemiconductor
    * Component: ARM::CMSIS:CORE:4.3.0
 
    * Component: NordicSemiconductor::Device:Startup:8.27.0
-      Include file:  Device\Include\system_nrf52840.h
       Source file:   Device\Source\system_nrf52840.c
       Include file:  Device\Include\system_nrf.h
       Source file:   Device\Source\arm\arm_startup_nrf52840.s
+      Include file:  Device\Include\system_nrf52840.h
 Build Time Elapsed:  00:00:04
 </pre>
 </body>

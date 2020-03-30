@@ -69,7 +69,7 @@
 	#include "nrf_gzp.h"
 	#include "nrf_ecb.h"
 	#include "nrf_gzll_error.h"
-	/*****************************************************************************/
+/*****************************************************************************/
 /** @name Configuration  */
 /*****************************************************************************/
 #define PIPE_NUMBER             0  /**< Pipe 0 is used in this example. */
@@ -459,6 +459,44 @@ static void init_cli(void)
 
 #ifdef DL_GZLL_TEST
 
+static void output_present(uint8_t val)
+{
+    uint32_t i;
+
+    for (i = 0; i < LEDS_NUMBER; i++)
+    {
+        if (val & (1 << i))
+        {
+            bsp_board_led_on(i);
+        }
+        else
+        {
+            bsp_board_led_off(i);
+        }
+    }
+}
+
+static void ui_init(void)
+{
+    uint32_t err_code;
+
+    // Initialize application timer.
+ //   err_code = app_timer_init();
+ //   APP_ERROR_CHECK(err_code);
+
+  //  err_code = bsp_init(BSP_INIT_LEDS, NULL);
+ //   APP_ERROR_CHECK(err_code);
+
+    // Set up logger
+ //   err_code = NRF_LOG_INIT(NULL);
+ //   APP_ERROR_CHECK(err_code);
+    
+  //  NRF_LOG_DEFAULT_BACKENDS_INIT();
+
+    bsp_board_init(BSP_INIT_LEDS);
+}
+
+
 #if 0
 #if GZLL_PA_LNA_CONTROL
 
@@ -691,16 +729,17 @@ static void gzll_init(void)
 }
 #endif
 
+
 static void gzll_pairing_init(void)
 {
 	 // Debug helper variables
-  //  uint32_t length;
+    uint32_t length;
 
     // Data and acknowledgement payloads
-   // uint8_t payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH];
+    uint8_t payload[NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH];
 
     // Set up the user interface (buttons and LEDs)
-   // ui_init();
+    ui_init();
 
     // Initialize the Gazell Link Layer
     bool result_value = nrf_gzll_init(NRF_GZLL_MODE_HOST);
@@ -721,15 +760,12 @@ static void gzll_pairing_init(void)
     GAZELLE_ERROR_CODE_CHECK(result_value);
 
     NRF_LOG_INFO("Gazell dynamic pairing example started. Host mode.");
-    NRF_LOG_FLUSH();
-
-
-	
+    NRF_LOG_FLUSH();	
 }
 
 static void exe_gzll_pairing(void)
 {
-			gzp_host_execute();
+		gzp_host_execute();
         // If a Host ID request received
         if (gzp_id_req_received())
         {
@@ -739,18 +775,46 @@ static void exe_gzll_pairing(void)
 
         length = NRF_GZLL_CONST_MAX_PAYLOAD_LENGTH;
 
+/*
         if (nrf_gzll_get_rx_fifo_packet_count(UNENCRYPTED_DATA_PIPE))
         {
             if (nrf_gzll_fetch_packet_from_rx_fifo(UNENCRYPTED_DATA_PIPE, payload, &length))
             {
-                //output_present(payload[0]);
+                NRF_LOG_INFO("DL_UNENCRYPTED_DATA_PIPE");
+                output_present(payload[0]);
             }
         }
-        else if (gzp_crypt_user_data_received())
+*/
+      //  else if (gzp_crypt_user_data_received())
+        if (gzp_crypt_user_data_received())
         {
             if (gzp_crypt_user_data_read(payload, (uint8_t *)&length))
             {
-                //output_present(payload[0]);
+                 //NRF_LOG_INFO("gzp_crypt_user_data_read %x",payload[0] );
+                output_present(payload[0]);               
+               if( payload[0] == 0xF7)
+               {
+                 UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, CONFIG_KBD_LETTER, true));
+               }
+               else if( payload[0] == 0xFB)
+               {
+                  UNUSED_RETURN_VALUE(app_usbd_hid_mouse_button_state(&m_app_hid_mouse, 0, true));
+               }
+               else if(payload[0] == 0xFD)
+               {
+                 UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, APP_USBD_HID_KBD_A, true));
+               }
+               else if(payload[0] == 0xFE)
+               {
+                 UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, APP_USBD_HID_KBD_B, true));
+               }
+                else if(payload[0] == 0xFF)
+                {
+                    UNUSED_RETURN_VALUE(app_usbd_hid_mouse_button_state(&m_app_hid_mouse, 0, false));
+                    UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, CONFIG_KBD_LETTER, false));
+                    UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, APP_USBD_HID_KBD_A, false));
+                    UNUSED_RETURN_VALUE(app_usbd_hid_kbd_key_control(&m_app_hid_kbd, APP_USBD_HID_KBD_B, false));
+                }
             }
         }	
 }
@@ -824,20 +888,24 @@ int main(void)
         app_usbd_enable();
         app_usbd_start();
     }
-
+#ifdef DL_GZLL_TEST
     gzll_pairing_init();
+#endif 
     while (true)
     {
+
+#ifdef DL_GZLL_TEST
+		exe_gzll_pairing();	
+#endif
         while (app_usbd_event_queue_process())
         {
             /* Nothing to do */
         }
 #if NRF_CLI_ENABLED
         nrf_cli_process(&m_cli_uart);
-#endif
-		exe_gzll_pairing();		
+#endif	
         UNUSED_RETURN_VALUE(NRF_LOG_PROCESS());
         /* Sleep CPU only if there was no interrupt since last loop processing */
-        __WFE();
+      //  __WFE();
     }
 }
